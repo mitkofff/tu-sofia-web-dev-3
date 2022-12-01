@@ -9,15 +9,42 @@ import { HeroService } from '../services/hero.service';
 })
 export class HeroListComponent implements OnInit {
   public heroes: any;
+  public heroDialog: boolean = false;
+  public hero: Hero = {} as Hero;
 
   constructor(private heroService: HeroService) {}
 
+
   ngOnInit() {
     this.heroService.getAllHeroes().subscribe({
-      next: (heroes) => {
-        this.heroes = heroes;
+      next: (heroes: any) => {
+		const parsedHeroes = heroes.map((hero: any) => {
+			const powers = hero.powers.map((power:any) => power.name).join(", ");
+			return {...hero, powers}
+		});
+
+        this.heroes = parsedHeroes;
       },
       error: (err) => {},
+    });
+  }
+
+  showDialog() {
+	this.heroDialog = true;
+  }
+
+  createHero() {
+    this.heroService.createHero(this.hero).subscribe({
+      next: (hero) => {
+		this.hero.name = "";
+
+        this.heroDialog = false;
+
+		this.ngOnInit()
+      },
+      error: (err) => {
+		console.log(err);
+	  },
     });
   }
 }
